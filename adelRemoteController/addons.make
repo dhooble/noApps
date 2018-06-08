@@ -5,3 +5,4 @@ ofxKinect
 ofxOpenCv
 ofxOSSIA
 ofxXmlSettings
+ofxOsc

@@ -192,13 +192,26 @@ void ofApp::setup(){
     servo4.setup(fServosMins[3], fServosMax[3]);
     servo5.setup(fServosMins[4], fServosMax[4]);
 
+    // setup Osc
+    fOsc.setName("Osc");
+    fOsc.add(fOscAngleServo1.set(servo1.getName(),fInitialPosServo1,0.,1.));
+    fOsc.add(fOscAngleServo2.set(servo2.getName(),fInitialPosServo2,0.,1.));
+    fOsc.add(fOscAngleServo3.set(servo3.getName(),fInitialPosServo3,0.,1.));
+    fOsc.add(fOscAngleServo4.set(servo4.getName(),fInitialPosServo4,0.,1.));
+    fOsc.add(fOscAngleServo5.set(servo5.getName(),fInitialPosServo5,0.,1.));
 
+    servo1.setOscParams(fOsc, "servo1");
+    servo2.setOscParams(fOsc, "servo2");
+    servo3.setOscParams(fOsc, "servo3");
+    servo4.setOscParams(fOsc, "servo4");
+    servo5.setOscParams(fOsc, "servo5");
     //ofSetLogLevel(OF_LOG_VERBOSE);
 
 
     arbotix->connectController(fArbotixPortName,fArbotixRate);
 
-    _gui.add (fOssia.get_root_node());
+    //_gui.add (fOssia.get_root_node());
+    _gui.add(fOsc);
 
     cas = 2;
     objectDetectionStartTime = clock();
@@ -380,11 +393,11 @@ void ofApp::update(){
         //update servos
         if (arbotix->isInitialized() && fMotorsEnabled)
         {
-            servo1.setAngle(fOssiaAngleServo1);
-            servo2.setAngle(fOssiaAngleServo2);
-            servo3.setAngle(fOssiaAngleServo3);
-            servo4.setAngle(fOssiaAngleServo4);
-            servo5.setAngle(fOssiaAngleServo5);
+            servo1.setAngle(fOscAngleServo1);
+            servo2.setAngle(fOscAngleServo2);
+            servo3.setAngle(fOscAngleServo3);
+            servo4.setAngle(fOscAngleServo4);
+            servo5.setAngle(fOscAngleServo5);
             servo1.update();
             servo2.update();
             servo3.update();
@@ -428,12 +441,12 @@ void ofApp::update(){
 
 void ofApp::standUp()
 {
-     fOssiaAngleServo3.set(1.0);
+     fOscAngleServo3.set(1.0);
 //     int timeSleepS = 1;
 //     usleep(timeSleepS*1000000);
-     fOssiaAngleServo2.set(1.0);
-     fOssiaAngleServo4.set(0.6);
-     fOssiaAngleServo5.set(0.5);
+     fOscAngleServo2.set(1.0);
+     fOscAngleServo4.set(0.6);
+     fOscAngleServo5.set(0.5);
 
 
 }
@@ -441,10 +454,10 @@ void ofApp::standUp()
 void ofApp::goToRest()
 {
 
-    fOssiaAngleServo3.set(fInitialPosServo3);
-    fOssiaAngleServo2.set(fInitialPosServo2);
-    fOssiaAngleServo4.set(fInitialPosServo4);
-    fOssiaAngleServo5.set(fInitialPosServo5);
+    fOscAngleServo3.set(fInitialPosServo3);
+    fOscAngleServo2.set(fInitialPosServo2);
+    fOscAngleServo4.set(fInitialPosServo4);
+    fOscAngleServo5.set(fInitialPosServo5);
     fTrackHead = false;
 
 }
@@ -638,11 +651,11 @@ void ofApp::enableMotors(bool state)
         float pos4 = ofMap(posServo4, fServosMins[3], fServosMax[3],0.,1.);
         float pos5 = ofMap(posServo5, fServosMins[4], fServosMax[4],0.,1.);
 
-        fOssiaAngleServo1.set(pos1);
-        fOssiaAngleServo2.set(pos2);
-        fOssiaAngleServo3.set(pos3);
-        fOssiaAngleServo4.set(pos4);
-        fOssiaAngleServo5.set(pos5);
+        fOscAngleServo1.set(pos1);
+        fOscAngleServo2.set(pos2);
+        fOscAngleServo3.set(pos3);
+        fOscAngleServo4.set(pos4);
+        fOscAngleServo5.set(pos5);
         fMotorsEnabled = true;
     }
     else
@@ -1076,8 +1089,8 @@ void ofApp::drawPoses() {
                 //printf("diff MS = %f\n",timeDiffMs);
                 if (timeDiffMs>=50.0)
                 {
-                    fOssiaHeadPositionX.set(xcm*64);
-                    fOssiaHeadPositionY.set(ycm*64);
+                    fOscHeadPositionX.set(xcm*64);
+                    fOscHeadPositionY.set(ycm*64);
                     objectDetectionStartTime = clock();
                 }
            }

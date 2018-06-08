@@ -31,6 +31,11 @@ void servo::setup(int min, int max)
     fMin.setup(fOssiaMinMaxControl, "min", min, 0, 1024);
     fMax.setup(fOssiaMinMaxControl, "max", max, 0, 1024);
 
+    fOscMin.set(fName+" min",min,0,1024);
+    fOscMax.set(fName+" max",max,0,1024);
+    //fOscMinMaxControl.add(fOscMin);
+    //fOscMinMaxControl.add(fOscMax);
+
 
     fIsInitialized = true;
 }
@@ -40,6 +45,14 @@ void servo::setOssiaParams(ossia::ParameterGroup ossiaParentNode, string name)
     fOssiaServoControl.setup(ossiaParentNode, name);
     fOssiaMinMaxControl.setup(fOssiaServoControl, "MIN/MAX");
     //_gl.setup(_joint, "my3d");
+}
+
+void servo::setOscParams(ofParameterGroup &oscParentNode, string name)
+{
+    //fOscServoControl.setName(name);
+    //fOssiaServoControl.add(fOscMinMaxControl);
+    oscParentNode.add(fOscMin);
+    oscParentNode.add(fOscMax);
 }
 
 int servo::getTemp()

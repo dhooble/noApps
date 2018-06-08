@@ -31,6 +31,7 @@ Project{
             'ofxOpenCv',
             'ofxOSSIA',
             'ofxXmlSettings',
+            'ofxOsc',
         ]
 
 

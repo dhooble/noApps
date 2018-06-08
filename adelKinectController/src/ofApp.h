@@ -93,6 +93,25 @@ class ofApp : public ofBaseApp{
         ossia::Parameter <int> fOssiaHeadPositionX;
         ossia::Parameter <int> fOssiaHeadPositionY;
 
+        // Osc Params
+        ofParameterGroup fOsc;
+        ofParameterGroup fOscAngleControl1;
+        ofParameterGroup fOscAngleControl2;
+        ofParameterGroup fOscAngleControl3;
+        ofParameterGroup fOscAngleControl4;
+        ofParameterGroup fOscAngleControl5;
+
+        ofParameterGroup fOscHeadPositionControl;
+
+        ofParameter <float> fOscAngleServo1;
+        ofParameter <float> fOscAngleServo2;
+        ofParameter <float> fOscAngleServo3;
+        ofParameter <float> fOscAngleServo4;
+        ofParameter <float> fOscAngleServo5;
+
+        ofParameter <int> fOscHeadPositionX;
+        ofParameter <int> fOscHeadPositionY;
+
         ofxXmlSettings fXMLReader;
         std::vector<std::string> fServosNames;
         std::vector<int> fServosPins;
