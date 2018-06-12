@@ -5,6 +5,7 @@
 #include "arbotixController.h"
 #include "servo.h"
 #include "ofxXmlSettings.h"
+#include "ofxOscParameterSync.h"
 
 #include <ctime>
 
@@ -74,24 +75,7 @@ class ofApp : public ofBaseApp{
         ofArduino ard;
         ofxPanel _gui;
 
-        // Ossia Params
-        ofxOssia fOssia;
-        ossia::ParameterGroup fOssiaAngleControl1;
-        ossia::ParameterGroup fOssiaAngleControl2;
-        ossia::ParameterGroup fOssiaAngleControl3;
-        ossia::ParameterGroup fOssiaAngleControl4;
-        ossia::ParameterGroup fOssiaAngleControl5;
-
-        ossia::ParameterGroup fOssiaHeadPositionControl;
-
-        ossia::Parameter <float> fOssiaAngleServo1;
-        ossia::Parameter <float> fOssiaAngleServo2;
-        ossia::Parameter <float> fOssiaAngleServo3;
-        ossia::Parameter <float> fOssiaAngleServo4;
-        ossia::Parameter <float> fOssiaAngleServo5;
-
-        ossia::Parameter <int> fOssiaHeadPositionX;
-        ossia::Parameter <int> fOssiaHeadPositionY;
+        ofxOscParameterSync sync;
 
         // Osc Params
         ofParameterGroup fOsc;

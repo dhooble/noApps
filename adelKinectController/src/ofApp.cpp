@@ -143,46 +143,20 @@ void ofApp::setup(){
     printf("setup servos done");
 
 
-    //setup Ossia
-    printf("setup Ossia");
-    fOssia.setup();
-    //fOssia.setup("OSCQuery", "ofxOssiaDevice", 9000, 5678);
-    fOssiaAngleControl1.setup(fOssia.get_root_node(), "Control 1");
-    fOssiaAngleControl2.setup(fOssia.get_root_node(), "Control 2");
-    fOssiaAngleControl3.setup(fOssia.get_root_node(), "Control 3");
-    fOssiaAngleControl4.setup(fOssia.get_root_node(), "Control 4");
-    fOssiaAngleControl5.setup(fOssia.get_root_node(), "Control 5");
-
-    fOssiaHeadPositionControl.setup(fOssia.get_root_node(), "Head");
-    fOssiaHeadPositionX.setup(fOssiaHeadPositionControl,"X",w/2,0,w);
-    fOssiaHeadPositionY.setup(fOssiaHeadPositionControl,"Y",h/2,0,h);
-
-
     float initialPosValue ;
 
     fInitialPosServo1 = ofMap(fServosInitialPos[0], fServosMins[0], fServosMax[0],0.,1.);
     printf("set initial pos to %f\n",initialPosValue);
-    fOssiaAngleServo1.setup(fOssiaAngleControl1, servo1.getName(), fInitialPosServo1, 0., 1.);
 
     fInitialPosServo2 = ofMap(fServosInitialPos[1], fServosMins[1], fServosMax[1],0.,1.);
-    fOssiaAngleServo2.setup(fOssiaAngleControl2, servo2.getName(), fInitialPosServo2, 0., 1.);
 
     fInitialPosServo3 = ofMap(fServosInitialPos[2], fServosMins[2], fServosMax[2],0.,1.);
-    fOssiaAngleServo3.setup(fOssiaAngleControl3, servo3.getName(), fInitialPosServo3, 0., 1.);
 
     fInitialPosServo4 = ofMap(fServosInitialPos[3], fServosMins[3], fServosMax[3],0.,1.);
     fmeanHeadPositionY = fServosMins[3];
-    fOssiaAngleServo4.setup(fOssiaAngleControl4, servo4.getName(), fInitialPosServo4, 0., 1.);
 
     fInitialPosServo5 = ofMap(fServosInitialPos[4], fServosMins[4], fServosMax[4],0.,1.);
     fmeanHeadPositionX = fServosMins[4];
-    fOssiaAngleServo5.setup(fOssiaAngleControl5, servo5.getName(), fInitialPosServo5, 0., 1.);
-
-    servo1.setOssiaParams(fOssia.get_root_node(), "servo1");
-    servo2.setOssiaParams(fOssia.get_root_node(), "servo2");
-    servo3.setOssiaParams(fOssia.get_root_node(), "servo3");
-    servo4.setOssiaParams(fOssia.get_root_node(), "servo4");
-    servo5.setOssiaParams(fOssia.get_root_node(), "servo5");
 
 
     // create a control zone named servo x with root node as parent
@@ -212,6 +186,8 @@ void ofApp::setup(){
 
     //_gui.add (fOssia.get_root_node());
     _gui.add(fOsc);
+
+    sync.setup((ofParameterGroup&)_gui.getParameter(),6667,"172.19.242.17",6666);
 
     cas = 2;
     objectDetectionStartTime = clock();
@@ -335,15 +311,15 @@ void ofApp::update(){
         //fmeanHeadPositionY = ofMap(768-sumValY/count,0,768,0.,1.);
 
         //take head positions at each frame
-        fmeanHeadPositionX = ofMap(1024-fOssiaHeadPositionX,0,1024,0.,1.);
-        fmeanHeadPositionY = ofMap(768-fOssiaHeadPositionY,0,768,0.,1.);
+        fmeanHeadPositionX = ofMap(1024-fOscHeadPositionX,0,1024,0.,1.);
+        fmeanHeadPositionY = ofMap(768-fOscHeadPositionY,0,768,0.,1.);
 
 //        fmeanHeadPositionX = ofMap(fOssiaHeadPositionX,0,1024,0.,1.);
 //        fmeanHeadPositionY = ofMap(768-fOssiaHeadPositionY,0,768,0.,1.);
 
 
-        fOssiaAngleServo4.set(fmeanHeadPositionY);
-        fOssiaAngleServo5.set(fmeanHeadPositionX);
+        fOscAngleServo4.set(fmeanHeadPositionY);
+        fOscAngleServo5.set(fmeanHeadPositionX);
         //printf("X HEAD : %f\n",fmeanHeadPositionX);
         //printf("Y HEAD : %f\n",fmeanHeadPositionY);
     }
@@ -512,8 +488,8 @@ void ofApp::draw(){
              //printf("diff MS = %f\n",timeDiffMs);
              if (timeDiffMs>=50.0)
              {
-                 fOssiaHeadPositionX.set(xcm*64);
-                 fOssiaHeadPositionY.set(ycm*64);
+                 fOscHeadPositionX.set(xcm*64);
+                 fOscHeadPositionY.set(ycm*64);
                  objectDetectionStartTime = clock();
 
              }
@@ -760,13 +736,13 @@ void ofApp::keyPressed(int key){
         {
             printf("key down pressed\n");
             {
-                float currentVal = fOssiaAngleServo4;
+                float currentVal = fOscAngleServo4;
                 currentVal -=0.05;
                 if (currentVal<=0.0)
                 {
                     currentVal = 0.0;
                 }
-                fOssiaAngleServo4.set(currentVal);
+                fOscAngleServo4.set(currentVal);
             }
         }
         break;
@@ -775,13 +751,13 @@ void ofApp::keyPressed(int key){
         {
 
             {
-                float currentVal = fOssiaAngleServo4;
+                float currentVal = fOscAngleServo4;
                 currentVal +=0.05;
                 if (currentVal>=1.0)
                 {
                     currentVal = 1.0;
                 }
-                fOssiaAngleServo4.set(currentVal);
+                fOscAngleServo4.set(currentVal);
                 }
         }
         break;
@@ -790,13 +766,13 @@ void ofApp::keyPressed(int key){
         {
             printf("key down pressed\n");
             {
-                float currentVal = fOssiaAngleServo5;
+                float currentVal = fOscAngleServo5;
                 currentVal -=0.05;
                 if (currentVal<=0.0)
                 {
                     currentVal = 0.0;
                 }
-                fOssiaAngleServo5.set(currentVal);
+                fOscAngleServo5.set(currentVal);
             }
         }
         break;
@@ -805,13 +781,13 @@ void ofApp::keyPressed(int key){
         {
 
             {
-                float currentVal = fOssiaAngleServo5;
+                float currentVal = fOscAngleServo5;
                 currentVal +=0.05;
                 if (currentVal>=1.0)
                 {
                     currentVal = 1.0;
                 }
-                fOssiaAngleServo5.set(currentVal);
+                fOscAngleServo5.set(currentVal);
                 }
         }
         break;

@@ -29,7 +29,6 @@ Project{
             'ofxHeadPoseEstimator',
             'ofxKinect',
             'ofxOpenCv',
-            'ofxOSSIA',
             'ofxXmlSettings',
             'ofxOsc',
         ]
