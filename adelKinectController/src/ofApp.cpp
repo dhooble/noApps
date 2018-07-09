@@ -187,7 +187,7 @@ void ofApp::setup(){
     //_gui.add (fOssia.get_root_node());
     _gui.add(fOsc);
 
-    sync.setup((ofParameterGroup&)_gui.getParameter(),6667,"localhost",6666);
+    sync.setup((ofParameterGroup&)_gui.getParameter(),6667,"172.19.242.17",6666);
 
     cas = 2;
     objectDetectionStartTime = clock();
