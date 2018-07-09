@@ -18,6 +18,7 @@ fbSwingLeg(false)
   printf("arbotixController::arbotixController\n");
   fInstance = this;
   xInitialized = false;
+  connected = false;
   arbotix = new ofArbotix();
   if (arbotix == NULL)
   {
@@ -42,46 +43,53 @@ bool arbotixController::connectController(const std::string &portName, int rate)
     }
 
     ofLogNotice() << "Try to connect to " << portName << " at " << rate;
-    bool connected = arbotix->connect(portName,rate);
+    connected = arbotix->connect(portName,rate);
 
     if (connected)
     {
         ofLogNotice("success");
+        arbotix->sendFirmwareVersionRequest();
+        printf("Wait for ready Event\n");
+        m_EInitializedConnection = arbotix->EInitialized.connect(boost::bind(&arbotixController::initialize, this, _1));
+        return true;
     }
-
-    //arbotix->sendReset();
-    //arbotix->sendProtocolVersionRequest();
-    arbotix->sendFirmwareVersionRequest();
-    printf("Wait for ready Event\n");
-    m_EInitializedConnection = arbotix->EInitialized.connect(boost::bind(&arbotixController::initialize, this, _1));
-    //ofAddListener(arbotix->EInitialized,&initializeCallback);
-    return true;
+    else
+    {
+        return false;
+    }
 }
 
 void arbotixController::initialize(const int &version)
 {
-    //boost::mutex::scoped_lock lock(fMutex);
-    ofLogNotice() << "Entering into init";
-    m_EInitializedConnection.disconnect();
-    m_EDigitalPinChanged = arbotix->EDigitalPinChanged.connect(boost::bind(&arbotixController::digitalPinChanged, this, _1));
-    m_EAnalogPinChanged = arbotix->EAnalogPinChanged.connect(boost::bind(&arbotixController::analogPinChanged, this, _1));
-    m_ECommanderChanged = arbotix->ECommanderDataReceived.connect(boost::bind(&arbotixController::commanderChanged, this, _1));
-    m_EDynamixelKeyReceived = arbotix->EDynamixelKeyReceived.connect(boost::bind(&arbotixController::dynamixelRecieved, this, _1));
-    m_EDynamixelAllReceived = arbotix->EDynamixelAllReceived.connect(boost::bind(&arbotixController::dynamixelRecieved, this, _1));
-    m_EDynamixelTransmitError = arbotix->EDynamixelTransmitError.connect(boost::bind(&arbotixController::dynamixelTransmitError, this, _1, _2));
-    m_EDynamixelGetRegister = arbotix->EDynamixelGetRegister.connect(boost::bind(&arbotixController::dynamixelGetRegister, this, _1, _2, _3));
+    if(connected)
+    {
+        //boost::mutex::scoped_lock lock(fMutex);
+        ofLogNotice() << "Entering into init";
+        m_EInitializedConnection.disconnect();
+        m_EDigitalPinChanged = arbotix->EDigitalPinChanged.connect(boost::bind(&arbotixController::digitalPinChanged, this, _1));
+        m_EAnalogPinChanged = arbotix->EAnalogPinChanged.connect(boost::bind(&arbotixController::analogPinChanged, this, _1));
+        m_ECommanderChanged = arbotix->ECommanderDataReceived.connect(boost::bind(&arbotixController::commanderChanged, this, _1));
+        m_EDynamixelKeyReceived = arbotix->EDynamixelKeyReceived.connect(boost::bind(&arbotixController::dynamixelRecieved, this, _1));
+        m_EDynamixelAllReceived = arbotix->EDynamixelAllReceived.connect(boost::bind(&arbotixController::dynamixelRecieved, this, _1));
+        m_EDynamixelTransmitError = arbotix->EDynamixelTransmitError.connect(boost::bind(&arbotixController::dynamixelTransmitError, this, _1, _2));
+        m_EDynamixelGetRegister = arbotix->EDynamixelGetRegister.connect(boost::bind(&arbotixController::dynamixelGetRegister, this, _1, _2, _3));
 
-    //ofRemoveListener(arbotix->EInitialized,&initializeCallback);
-    printf("getFirmwareNames\n");
-    ofLogNotice() << arbotix->getFirmwareName();
-    ofLogNotice() << "firmata v" << arbotix->getMajorFirmwareVersion() << "." << arbotix->getMinorFirmwareVersion();
+        //ofRemoveListener(arbotix->EInitialized,&initializeCallback);
+        printf("getFirmwareNames\n");
+        ofLogNotice() << arbotix->getFirmwareName();
+        ofLogNotice() << "firmata v" << arbotix->getMajorFirmwareVersion() << "." << arbotix->getMinorFirmwareVersion();
 
 
-    xInitialized = true;
+        xInitialized = true;
 
-    setup();
+        setup();
 
-    printf("done\n");
+        printf("done\n");
+    }
+    else
+    {
+        printf("No Device connected");
+    }
 
 }
 
@@ -204,41 +212,52 @@ void arbotixController::sendServoAngle(int servoId, int angle, int speed)
 
 int arbotixController::getServoTemp(const unsigned int &servoId)
 {
-    getDynamixelRegister(servoId,ax12TempRegister,2);
-    std::map <int,int>::iterator it;
-    it=fServosTemps.find(servoId);
-    if (it!=fServosTemps.end())
+    if(connected)
     {
-        return fServosTemps[servoId];
+        getDynamixelRegister(servoId,ax12TempRegister,2);
+        std::map <int,int>::iterator it;
+        it=fServosTemps.find(servoId);
+        if (it!=fServosTemps.end())
+        {
+            return fServosTemps[servoId];
+        }
+        else{
+            return -1;
+        }
     }
-    else{
-        return -1;
-    }
+    return -1;
 }
 
 int arbotixController::getServoPos(const unsigned int &servoId)
 {
-    getDynamixelRegister(servoId,ax12PosRegister,2);
-    std::map <int,int>::iterator it;
-    it=fServosPos.find(servoId);
-    if (it!=fServosPos.end())
-    {
-        return fServosPos[servoId];
+    if(connected){
+        getDynamixelRegister(servoId,ax12PosRegister,2);
+        std::map <int,int>::iterator it;
+        it=fServosPos.find(servoId);
+        if (it!=fServosPos.end())
+        {
+            return fServosPos[servoId];
+        }
+        else{
+            return -1;
+        }
     }
-    else{
-        return -1;
-    }
+    return -1;
 }
 
 void arbotixController::moveServos()
 {
-    arbotix->sendDynamixelSynchMoveExecute();
+    if(xInitialized)
+    {
+        arbotix->sendDynamixelSynchMoveExecute();
+    }
 }
 
 void arbotixController::disconnect()
 {
    arbotix->disconnect();
    xInitialized = false;
+   connected = false;
 
 }
 
@@ -249,19 +268,25 @@ void arbotixController::enableServo(const unsigned int &servoId)
 
 void arbotixController::disableServo(const unsigned int &servoId)
 {
-    printf("abotix : disable servo %i\n",servoId);
-    //arbotix->sendDynamixelStop(servoId);
-    arbotix->sendDynamixelSetRegister(servoId, 0x18, 2, 0);
-    //bool ret = arbotix->waitForSysExMessage(SYSEX_DYNAMIXEL_SET_REGISTER, 2);
-    //printf("ret : %i\n",ret);
+    if(xInitialized)
+    {
+        printf("abotix : disable servo %i\n",servoId);
+        //arbotix->sendDynamixelStop(servoId);
+        arbotix->sendDynamixelSetRegister(servoId, 0x18, 2, 0);
+        //bool ret = arbotix->waitForSysExMessage(SYSEX_DYNAMIXEL_SET_REGISTER, 2);
+        //printf("ret : %i\n",ret);
+    }
 
 }
 
 
 void arbotixController::update()
 {
+    if(xInitialized)
+    {
+        arbotix->update();
+    }
 
-    arbotix->update();
 }
 
 arbotixController *arbotixController::getInstance()
@@ -272,6 +297,11 @@ arbotixController *arbotixController::getInstance()
 bool arbotixController::isInitialized()
 {
     return xInitialized;
+}
+
+bool arbotixController::isConnected()
+{
+    return connected;
 }
 
 //void arbotixController::loadConfiguration(const std::string &fileName)
@@ -339,12 +369,15 @@ void arbotixController::xConnect(const std::string &portName, const int rate)
 //--------------------------------------------------------------
 void arbotixController::digitalPinChanged(const int & pinNum)
 {
-    // do something with the digital input. here we're simply going to print the pin number and
-    // value to the screen each time it changes
-    int iVal = arbotix->getDigital(pinNum);
-    //std::cout << "digital pin: " << pinNum << " = " << iVal << "\r\n";
+    if(xInitialized)
+    {
+        // do something with the digital input. here we're simply going to print the pin number and
+        // value to the screen each time it changes
+        int iVal = arbotix->getDigital(pinNum);
+        //std::cout << "digital pin: " << pinNum << " = " << iVal << "\r\n";
 
-    //arbotix->sendDigital(13, iVal);
+        //arbotix->sendDigital(13, iVal);
+    }
 }
 
 // analog pin event handler, called whenever an analog pin value has changed
@@ -352,10 +385,13 @@ void arbotixController::digitalPinChanged(const int & pinNum)
 //--------------------------------------------------------------
 void arbotixController::analogPinChanged(const int & pinNum)
 {
-    // do something with the analog input. here we're simply going to print the pin number and
-    // value to the screen each time it changes
-    int iVal = arbotix->getAnalog(pinNum);
-    std::cout << "analog pin: " << pinNum << " = " << iVal << "\r\n";
+    if(xInitialized)
+    {
+        // do something with the analog input. here we're simply going to print the pin number and
+        // value to the screen each time it changes
+        int iVal = arbotix->getAnalog(pinNum);
+        std::cout << "analog pin: " << pinNum << " = " << iVal << "\r\n";
+    }
 }
 
 //commander event handler, called whenever a commander button value has changed
@@ -445,14 +481,20 @@ void arbotixController::dynamixelTransmitError(const int & cmd, const int & serv
 
 void arbotixController::getDynamixelRegister(const unsigned char &servo, const unsigned char &reg, const unsigned char &length)
 {
-    arbotix->sendDynamixelGetRegister(servo, reg, length);
-    bool ret = arbotix->waitForSysExMessage(SYSEX_DYNAMIXEL_GET_REGISTER, length);
-    //printf("arbotixController::getDynamixelRegister - ret =%i\n",ret);
+    if(xInitialized)
+    {
+        arbotix->sendDynamixelGetRegister(servo, reg, length);
+        bool ret = arbotix->waitForSysExMessage(SYSEX_DYNAMIXEL_GET_REGISTER, length);
+        //printf("arbotixController::getDynamixelRegister - ret =%i\n",ret);
+    }
 }
 
 void arbotixController::setDynamixelRegister(const unsigned char &servo, const unsigned char &reg, const unsigned char &length, const unsigned int &value)
 {
-    arbotix->sendDynamixelSetRegister(servo, reg, length, value);
+    if(xInitialized)
+    {
+        arbotix->sendDynamixelSetRegister(servo, reg, length, value);
+    }
 }
 
 void arbotixController::dynamixelGetRegister(const unsigned int &servo, const unsigned int &reg, const unsigned int &value) {

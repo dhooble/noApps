@@ -53,6 +53,7 @@ public:
     static arbotixController* getInstance();
     static void initializeCallback(const int &version);
     bool isInitialized();
+    bool isConnected();
     void setup();
     //void loadConfiguration(const std::string &fileName);
     void sendServoAngle(int servoId,int angle, int speed);
@@ -72,6 +73,7 @@ private :
 
     ofArbotix *arbotix;
     bool xInitialized;
+    bool connected;
     static arbotixController *fInstance;
     ofEvent <const int> arduinoInitiliazedEvent;
 
