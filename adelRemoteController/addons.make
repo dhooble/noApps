@@ -1,8 +1,0 @@
-ofxCv
-ofxGui
-ofxHeadPoseEstimator
-ofxKinect
-ofxOpenCv
-ofxOSSIA
-ofxXmlSettings
-ofxOsc
